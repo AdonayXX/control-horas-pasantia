@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reporte #{{ report.id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Reporte #{{ report.id }}</h1>
+      <p>Creado: {{ report.created_at }}</p>
+      <p>
+        <a href="{{ url_for('download_report', report_id=report.id) }}">Descargar PDF</a> |
+        <a href="{{ url_for('index') }}">Volver</a>
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Semana</th>
+            <th>Día</th>
+            <th>Total de horas</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in report.entries %}
+            <tr>
+              <td>{{ entry.semana }}</td>
+              <td>{{ entry.dia }}</td>
+              <td>{{ entry.total_horas }}</td>
+              <td>{{ entry.observaciones }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+  </body>
+</html>
