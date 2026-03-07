@@ -103,8 +103,7 @@ def download_report(report_id: int):
         abort(404)
 
     pdf_path = REPORTS_DIR / f"reporte_{report_id}.pdf"
-    if not pdf_path.exists():
-        abort(404)
+    generate_report_pdf(report.entries, output_path=pdf_path, report_id=report.id)
 
     return send_file(
         pdf_path,
