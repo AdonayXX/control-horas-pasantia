@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -10,11 +11,11 @@ from db import ReportEntry, create_report, get_report, init_db, list_reports
 from pdf_utils import generate_report_pdf
 
 BASE_DIR = Path(__file__).resolve().parent
-REPORTS_DIR = BASE_DIR / "tmp" / "reports"
+REPORTS_DIR = Path(os.environ.get("REPORTS_DIR", BASE_DIR / "tmp" / "reports")).resolve()
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "dev-secret-change-me"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-me")
 app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 
 init_db()

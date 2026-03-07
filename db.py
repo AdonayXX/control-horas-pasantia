@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
@@ -7,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "database.sqlite3"
+DB_PATH = Path(os.environ.get("DATABASE_PATH", BASE_DIR / "database.sqlite3")).resolve()
 
 
 @dataclass
@@ -26,6 +27,7 @@ class Report:
 
 
 def _connection() -> sqlite3.Connection:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
