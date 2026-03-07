@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -11,11 +10,11 @@ from db import ReportEntry, create_report, get_report, init_db, list_reports
 from pdf_utils import generate_report_pdf
 
 BASE_DIR = Path(__file__).resolve().parent
-REPORTS_DIR = Path(os.getenv("REPORTS_DIR", BASE_DIR / "tmp" / "reports"))
+REPORTS_DIR = BASE_DIR / "tmp" / "reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-change-me")
+app.config["SECRET_KEY"] = "dev-secret-change-me"
 app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 
 init_db()
@@ -65,11 +64,6 @@ def _parse_entries_from_form() -> List[ReportEntry]:
         raise ValueError("Debes ingresar al menos una fila con datos.")
 
     return entries
-
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}, 200
 
 
 @app.get("/")
