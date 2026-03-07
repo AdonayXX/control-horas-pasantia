@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de Horas de Pasantía</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Control de Horas de Pasantía</h1>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section>
+            {% for category, message in messages %}
+              <p class="alert {{ category }}">{{ message }}</p>
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="{{ url_for('create_report_view') }}">
+        <table id="hours-table">
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Día (yyyy/mm/dd)</th>
+              <th>Total de horas</th>
+              <th>Observaciones</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="actions">
+          <button type="button" id="add-row">+ Agregar fila</button>
+          <button type="submit">Generar y guardar reporte</button>
+        </div>
+      </form>
+
+      <section>
+        <h2>Reportes recientes</h2>
+        {% if reports %}
+          <ul>
+            {% for report in reports %}
+              <li>
+                Reporte #{{ report.id }} — {{ report.created_at }}
+                <a href="{{ url_for('report_detail', report_id=report.id) }}">Ver detalle</a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>Aún no hay reportes.</p>
+        {% endif %}
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
