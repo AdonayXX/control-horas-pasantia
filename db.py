@@ -85,6 +85,26 @@ def create_report(entries: List[ReportEntry]) -> int:
     return int(report_id)
 
 
+def add_entries_to_report(report_id: int, entries: List[ReportEntry]) -> bool:
+    with _connection() as conn:
+        report_exists = conn.execute("SELECT 1 FROM reports WHERE id = ?", (report_id,)).fetchone()
+        if not report_exists:
+            return False
+
+        for entry in entries:
+            conn.execute(
+                """
+                INSERT INTO report_entries (report_id, semana, dia, total_horas, observaciones)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (report_id, entry.semana, entry.dia, entry.total_horas, entry.observaciones),
+            )
+
+        conn.commit()
+
+    return True
+
+
 def delete_report(report_id: int) -> bool:
     with _connection() as conn:
         report_exists = conn.execute("SELECT 1 FROM reports WHERE id = ?", (report_id,)).fetchone()

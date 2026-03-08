@@ -9,6 +9,15 @@
   <body>
     <main class="container">
       <h1>Reporte #{{ report.id }}</h1>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section>
+            {% for category, message in messages %}
+              <p class="alert {{ category }}">{{ message }}</p>
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
       <p>Creado: {{ report.created_at }}</p>
       <p>
         <a href="{{ url_for('download_report', report_id=report.id) }}">Descargar PDF</a> |
@@ -50,6 +59,29 @@
           </tr>
         </tfoot>
       </table>
+
+      <section id="add-hours" class="append-section">
+        <h2>Agregar horas a este reporte</h2>
+        <form method="post" action="{{ url_for('append_report_entries_view', report_id=report.id) }}">
+          <table id="hours-table">
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Día (yyyy/mm/dd)</th>
+                <th>Total de horas</th>
+                <th>Observaciones</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div class="actions">
+            <button type="button" id="add-row">+ Agregar fila</button>
+            <button type="submit">Guardar horas en este reporte</button>
+          </div>
+        </form>
+      </section>
     </main>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
   </body>
 </html>

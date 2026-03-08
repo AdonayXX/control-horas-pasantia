@@ -19,6 +19,10 @@ table {
   margin-top: 12px;
 }
 
+.append-section {
+  margin-top: 28px;
+}
+
 th, td {
   border: 1px solid #e5e5e5;
   padding: 10px;
