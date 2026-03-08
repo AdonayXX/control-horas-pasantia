@@ -29,6 +29,12 @@ th {
   background: #f0f0f0;
 }
 
+tfoot td,
+.total-row td {
+  font-weight: 700;
+  background: #f7f7f7;
+}
+
 input {
   width: 100%;
   box-sizing: border-box;

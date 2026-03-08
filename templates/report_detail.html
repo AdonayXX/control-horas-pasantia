@@ -34,6 +34,13 @@
             </tr>
           {% endfor %}
         </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="2">Total de horas</td>
+            <td>{{ report.total_horas }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
       </table>
     </main>
   </body>

@@ -25,6 +25,10 @@ class Report:
     created_at: str
     entries: List[ReportEntry]
 
+    @property
+    def total_horas(self) -> int:
+        return sum(entry.total_horas for entry in self.entries)
+
 
 def _connection() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)

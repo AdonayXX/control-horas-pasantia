@@ -24,6 +24,7 @@ UTN_LOGO_PATH = STATIC_DIR / "utn.png"
 
 def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id: int) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    total_horas = sum(entry.total_horas for entry in entries)
 
     doc = SimpleDocTemplate(
         str(output_path),
@@ -135,6 +136,16 @@ def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id
             ]
         )
 
+    total_row_index = len(data)
+    data.append(
+        [
+            _as_paragraph("Total de horas", header_style),
+            "",
+            _as_paragraph(str(total_horas), centered_cell_style),
+            "",
+        ]
+    )
+
     table = LongTable(
         data,
         colWidths=[semana_width, dia_width, horas_width, observaciones_width],
@@ -153,6 +164,9 @@ def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id
                 ("TOPPADDING", (0, 0), (-1, -1), 6),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
                 ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f9fafb")]),
+                ("SPAN", (0, total_row_index), (1, total_row_index)),
+                ("BACKGROUND", (0, total_row_index), (-1, total_row_index), colors.HexColor("#eef2f3")),
+                ("FONTNAME", (0, total_row_index), (-1, total_row_index), "Helvetica-Bold"),
             ]
         )
     )
