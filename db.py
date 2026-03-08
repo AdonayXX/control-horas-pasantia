@@ -85,6 +85,19 @@ def create_report(entries: List[ReportEntry]) -> int:
     return int(report_id)
 
 
+def delete_report(report_id: int) -> bool:
+    with _connection() as conn:
+        report_exists = conn.execute("SELECT 1 FROM reports WHERE id = ?", (report_id,)).fetchone()
+        if not report_exists:
+            return False
+
+        conn.execute("DELETE FROM report_entries WHERE report_id = ?", (report_id,))
+        conn.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+        conn.commit()
+
+    return True
+
+
 def get_report(report_id: int) -> Optional[Report]:
     with _connection() as conn:
         report_row = conn.execute("SELECT id, created_at FROM reports WHERE id = ?", (report_id,)).fetchone()

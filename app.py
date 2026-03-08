@@ -7,7 +7,7 @@ from typing import List
 
 from flask import Flask, abort, flash, redirect, render_template, request, send_file, url_for
 
-from db import ReportEntry, create_report, get_report, init_db, list_reports
+from db import ReportEntry, create_report, delete_report, get_report, init_db, list_reports
 from pdf_utils import generate_report_pdf
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -95,6 +95,20 @@ def report_detail(report_id: int):
         abort(404)
 
     return render_template("report_detail.html", report=report)
+
+
+@app.post("/reports/<int:report_id>/delete")
+def delete_report_view(report_id: int):
+    deleted = delete_report(report_id)
+    if not deleted:
+        abort(404)
+
+    pdf_path = REPORTS_DIR / f"reporte_{report_id}.pdf"
+    if pdf_path.exists():
+        pdf_path.unlink()
+
+    flash(f"Reporte #{report_id} eliminado.", "success")
+    return redirect(url_for("index"))
 
 
 @app.get("/reports/<int:report_id>/download")

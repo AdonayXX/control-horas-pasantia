@@ -48,6 +48,14 @@
                 Reporte #{{ report.id }} — {{ report.created_at }}
                 <a href="{{ url_for('report_detail', report_id=report.id) }}">Ver detalle</a> |
                 <a href="{{ url_for('download_report', report_id=report.id) }}">Descargar PDF</a>
+                <form
+                  method="post"
+                  action="{{ url_for('delete_report_view', report_id=report.id) }}"
+                  class="inline-form"
+                  onsubmit="return confirm('¿Eliminar el reporte #{{ report.id }}? Esta acción no se puede deshacer.');"
+                >
+                  <button type="submit" class="link-button danger-link">Eliminar</button>
+                </form>
               </li>
             {% endfor %}
           </ul>
