@@ -12,26 +12,19 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Image, KeepTogether, LongTable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from db import ReportEntry
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-FONTS_DIR = STATIC_DIR / "fonts"
 PT_LOGO_PATH = STATIC_DIR / "pt.png"
 UTN_LOGO_PATH = STATIC_DIR / "utn.png"
-GABARITO_FONT_PATH = FONTS_DIR / "Gabarito-wght.ttf"
-GABARITO_FONT_NAME = "Gabarito"
 
 
 def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id: int) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     total_horas = sum(entry.total_horas for entry in entries)
-    brand_font_name = _register_custom_fonts()
-
     doc = SimpleDocTemplate(
         str(output_path),
         pagesize=A4,
@@ -60,15 +53,6 @@ def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id
         leading=11,
         alignment=TA_CENTER,
         textColor=colors.HexColor("#4b5563"),
-    )
-    brand_style = ParagraphStyle(
-        "BrandCaption",
-        parent=styles["BodyText"],
-        fontName=brand_font_name,
-        fontSize=10.5,
-        leading=12,
-        alignment=TA_CENTER,
-        textColor=colors.HexColor("#124f36"),
     )
     header_style = ParagraphStyle(
         "TableHeader",
@@ -122,7 +106,6 @@ def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id
         _build_report_header(
             available_width=available_width,
             report_id=report_id,
-            brand_style=brand_style,
             title_style=title_style,
             subtitle_style=subtitle_style,
         )
@@ -217,18 +200,13 @@ def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id
 def _build_report_header(
     available_width: float,
     report_id: int,
-    brand_style: ParagraphStyle,
     title_style: ParagraphStyle,
     subtitle_style: ParagraphStyle,
 ) -> Table:
     header = Table(
         [
             [
-                [
-                    _build_logo(PT_LOGO_PATH, target_height=22 * mm, max_width=28 * mm, tint_hex="#124f36"),
-                    Spacer(1, 4),
-                    Paragraph("Parque Tempisque", brand_style),
-                ],
+                _build_logo(PT_LOGO_PATH, target_height=22 * mm, max_width=28 * mm, tint_hex="#124f36"),
                 [
                     Paragraph("Control de Horas de Pasantía", title_style),
                     Spacer(1, 3),
@@ -255,17 +233,6 @@ def _build_report_header(
         )
     )
     return header
-
-
-def _register_custom_fonts() -> str:
-    if GABARITO_FONT_PATH.exists():
-        try:
-            pdfmetrics.getFont(GABARITO_FONT_NAME)
-        except KeyError:
-            pdfmetrics.registerFont(TTFont(GABARITO_FONT_NAME, str(GABARITO_FONT_PATH)))
-        return GABARITO_FONT_NAME
-
-    return "Helvetica-Bold"
 
 
 def _build_signature_table(
