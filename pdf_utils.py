@@ -255,10 +255,21 @@ def _build_signature_table(
                 Paragraph("Área sugerida para firma digital", digital_box_style),
             ],
             [
+                Paragraph("______________________________", normal_style),
+                "",
+            ],
+            [
+                Paragraph("Nombre:", label_style),
+                "",
+            ],
+            [
                 _build_signature_asset(name_image_path, width=left_width * 0.9, max_height=14 * mm),
                 "",
             ],
-            [Paragraph("Fecha: _______________________", normal_style), ""],
+            [
+                Paragraph("______________________________", normal_style),
+                "",
+            ],
         ],
         colWidths=[left_width, right_width],
         hAlign="LEFT",
@@ -266,18 +277,18 @@ def _build_signature_table(
     signature_table.setStyle(
         TableStyle(
             [
-                ("SPAN", (1, 1), (1, 3)),
-                ("BOX", (1, 1), (1, 3), 1, colors.black),
+                ("SPAN", (1, 1), (1, 5)),
+                ("BOX", (1, 1), (1, 5), 1, colors.black),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ALIGN", (1, 1), (1, 3), "CENTER"),
+                ("ALIGN", (1, 1), (1, 5), "CENTER"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 0),
                 ("TOPPADDING", (0, 0), (-1, -1), 4),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (1, 1), (1, 3), 18),
-                ("BOTTOMPADDING", (1, 1), (1, 3), 18),
-                ("LEFTPADDING", (1, 1), (1, 3), 8),
-                ("RIGHTPADDING", (1, 1), (1, 3), 8),
+                ("TOPPADDING", (1, 1), (1, 5), 18),
+                ("BOTTOMPADDING", (1, 1), (1, 5), 18),
+                ("LEFTPADDING", (1, 1), (1, 5), 8),
+                ("RIGHTPADDING", (1, 1), (1, 5), 8),
             ]
         )
     )
