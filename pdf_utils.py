@@ -247,29 +247,24 @@ def _build_signature_table(
     signature_image_path = _resolve_image_path("firma")
     name_image_path = _resolve_image_path("nombre")
 
+    # Celda izquierda: imagen firma + línea pegada + etiqueta nombre + imagen nombre + línea pegada
+    # Al pasar una lista como contenido de celda, ReportLab los apila verticalmente sin gap extra
+    left_cell = [
+        _build_signature_asset(signature_image_path, width=left_width * 0.6, max_height=25 * mm),
+        Spacer(1, -8),
+        Paragraph("______________________________", normal_style),
+        Spacer(1, 14),
+        Paragraph("Nombre:", label_style),
+        Spacer(1, 6),
+        _build_signature_asset(name_image_path, width=left_width * 0.65, max_height=16 * mm),
+        Spacer(1, -8),
+        Paragraph("______________________________", normal_style),
+    ]
+
     signature_table = Table(
         [
             [Paragraph("Firma manual", label_style), Paragraph("Firma digital", label_style)],
-            [
-                _build_signature_asset(signature_image_path, width=left_width * 0.85, max_height=20 * mm),
-                Paragraph("Área sugerida para firma digital", digital_box_style),
-            ],
-            [
-                Paragraph("______________________________", normal_style),
-                "",
-            ],
-            [
-                Paragraph("Nombre:", label_style),
-                "",
-            ],
-            [
-                _build_signature_asset(name_image_path, width=left_width * 0.9, max_height=14 * mm),
-                "",
-            ],
-            [
-                Paragraph("______________________________", normal_style),
-                "",
-            ],
+            [left_cell, Paragraph("Área sugerida para firma digital", digital_box_style)],
         ],
         colWidths=[left_width, right_width],
         hAlign="LEFT",
@@ -277,18 +272,17 @@ def _build_signature_table(
     signature_table.setStyle(
         TableStyle(
             [
-                ("SPAN", (1, 1), (1, 5)),
-                ("BOX", (1, 1), (1, 5), 1, colors.black),
+                ("BOX", (1, 1), (1, 1), 1, colors.black),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ALIGN", (1, 1), (1, 5), "CENTER"),
+                ("ALIGN", (1, 1), (1, 1), "CENTER"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 0),
                 ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (1, 1), (1, 5), 18),
-                ("BOTTOMPADDING", (1, 1), (1, 5), 18),
-                ("LEFTPADDING", (1, 1), (1, 5), 8),
-                ("RIGHTPADDING", (1, 1), (1, 5), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("TOPPADDING", (1, 1), (1, 1), 18),
+                ("BOTTOMPADDING", (1, 1), (1, 1), 18),
+                ("LEFTPADDING", (1, 1), (1, 1), 8),
+                ("RIGHTPADDING", (1, 1), (1, 1), 8),
             ]
         )
     )
@@ -314,17 +308,27 @@ def _build_signature_asset(path: Path, width: float, max_height: float):
 
 
 def _prepare_signature_source(path: Path):
-    """Convert near-black background pixels to transparent for cleaner signatures."""
+    """Convert near-black or near-white background pixels to transparent for cleaner signatures and crop to ink."""
     with PILImage.open(path).convert("RGBA") as img:
         pixels = img.getdata()
         processed = []
         for r, g, b, a in pixels:
-            if r < 20 and g < 20 and b < 20:
+            # Tolerancia para considerar un píxel como "fondo negro"
+            if r < 30 and g < 30 and b < 30:
                 processed.append((r, g, b, 0))
+            # Tolerancia para considerar un píxel como "fondo blanco"
+            elif r > 220 and g > 220 and b > 220:
+                processed.append((255, 255, 255, 0))
             else:
                 processed.append((r, g, b, a))
 
         img.putdata(processed)
+        
+        # Recortar la imagen al tamaño real del contenido (ignorando fondo transparente)
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+
         buffer = BytesIO()
         img.save(buffer, format="PNG")
         buffer.seek(0)
