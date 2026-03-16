@@ -47,7 +47,7 @@
               <li>
                 Reporte #{{ report.id }} — {{ report.created_at }}
                 <a href="{{ url_for('report_detail', report_id=report.id) }}">Ver detalle</a> |
-                <a href="{{ url_for('report_detail', report_id=report.id, _anchor='add-hours') }}">Agregar horas</a> |
+                <a href="{{ url_for('report_detail', report_id=report.id, _anchor='edit-report') }}">Editar</a> |
                 <a href="{{ url_for('download_report', report_id=report.id) }}">Descargar PDF</a>
                 <form
                   method="post"

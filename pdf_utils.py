@@ -244,11 +244,20 @@ def _build_signature_table(
     left_width = available_width * 0.44
     right_width = available_width - left_width
 
+    signature_image_path = _resolve_image_path("firma")
+    name_image_path = _resolve_image_path("nombre")
+
     signature_table = Table(
         [
             [Paragraph("Firma manual", label_style), Paragraph("Firma digital", label_style)],
-            [Paragraph("______________________________", normal_style), Paragraph("Área sugerida para firma digital", digital_box_style)],
-            [Paragraph("Nombre: ______________________", normal_style), ""],
+            [
+                _build_signature_asset(signature_image_path, width=left_width * 0.85, max_height=20 * mm),
+                Paragraph("Área sugerida para firma digital", digital_box_style),
+            ],
+            [
+                _build_signature_asset(name_image_path, width=left_width * 0.9, max_height=14 * mm),
+                "",
+            ],
             [Paragraph("Fecha: _______________________", normal_style), ""],
         ],
         colWidths=[left_width, right_width],
@@ -273,6 +282,50 @@ def _build_signature_table(
         )
     )
     return signature_table
+
+
+def _build_signature_asset(path: Path, width: float, max_height: float):
+    if not path.exists():
+        return Paragraph("______________________________", getSampleStyleSheet()["Normal"])
+
+    image_source = _prepare_signature_source(path)
+    original_width, original_height = ImageReader(image_source).getSize()
+    scale = width / original_width
+    scaled_width = width
+    scaled_height = original_height * scale
+
+    if scaled_height > max_height:
+        resize_ratio = max_height / scaled_height
+        scaled_width *= resize_ratio
+        scaled_height *= resize_ratio
+
+    return Image(image_source, width=scaled_width, height=scaled_height)
+
+
+def _prepare_signature_source(path: Path):
+    """Convert near-black background pixels to transparent for cleaner signatures."""
+    with PILImage.open(path).convert("RGBA") as img:
+        pixels = img.getdata()
+        processed = []
+        for r, g, b, a in pixels:
+            if r < 20 and g < 20 and b < 20:
+                processed.append((r, g, b, 0))
+            else:
+                processed.append((r, g, b, a))
+
+        img.putdata(processed)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return buffer
+
+
+def _resolve_image_path(base_name: str) -> Path:
+    for ext in (".png", ".jpg", ".jpeg"):
+        candidate = STATIC_DIR / f"{base_name}{ext}"
+        if candidate.exists():
+            return candidate
+    return STATIC_DIR / f"{base_name}.png"
 
 
 def _build_logo(path: Path, target_height: float, max_width: float, tint_hex: str | None = None):

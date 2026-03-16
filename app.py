@@ -7,7 +7,16 @@ from typing import List
 
 from flask import Flask, abort, flash, redirect, render_template, request, send_file, url_for
 
-from db import ReportEntry, add_entries_to_report, create_report, delete_report, get_report, init_db, list_reports
+from db import (
+    ReportEntry,
+    add_entries_to_report,
+    create_report,
+    delete_report,
+    get_report,
+    init_db,
+    list_reports,
+    update_report,
+)
 from pdf_utils import generate_report_pdf
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -115,6 +124,41 @@ def append_report_entries_view(report_id: int):
 
     flash(f"Se agregaron {len(new_entries)} fila(s) al reporte #{report_id}.", "success")
     return redirect(url_for("report_detail", report_id=report_id))
+
+
+@app.post("/reports/<int:report_id>/edit")
+def edit_report_view(report_id: int):
+    report = get_report(report_id)
+    if not report:
+        abort(404)
+
+    report_number_raw = request.form.get("report_number", str(report_id)).strip()
+    try:
+        new_report_id = int(report_number_raw)
+    except ValueError as exc:
+        flash("El numero del reporte debe ser un entero.", "error")
+        return redirect(url_for("report_detail", report_id=report_id, _anchor="edit-report"))
+
+    try:
+        entries = _parse_entries_from_form()
+        final_report_id = update_report(report_id, entries, new_report_id=new_report_id)
+
+        old_pdf_path = REPORTS_DIR / f"reporte_{report_id}.pdf"
+        new_pdf_path = REPORTS_DIR / f"reporte_{final_report_id}.pdf"
+        if report_id != final_report_id and old_pdf_path.exists():
+            old_pdf_path.unlink()
+
+        generate_report_pdf(entries, output_path=new_pdf_path, report_id=final_report_id)
+    except ValueError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("report_detail", report_id=report_id, _anchor="edit-report"))
+
+    if final_report_id != report_id:
+        flash(f"Reporte actualizado y renumerado de #{report_id} a #{final_report_id}.", "success")
+    else:
+        flash(f"Reporte #{report_id} actualizado correctamente.", "success")
+
+    return redirect(url_for("report_detail", report_id=final_report_id))
 
 
 @app.post("/reports/<int:report_id>/delete")

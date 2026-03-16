@@ -1,6 +1,15 @@
 const rowsContainer = document.getElementById("rows");
 const addButton = document.getElementById("add-row");
 
+function wireDeleteButton(button) {
+  button.addEventListener("click", () => {
+    const row = button.closest("tr");
+    if (row) {
+      row.remove();
+    }
+  });
+}
+
 function addRow() {
   const row = document.createElement("tr");
   row.innerHTML = `
@@ -11,9 +20,15 @@ function addRow() {
     <td><button type="button" class="delete-row">Eliminar</button></td>
   `;
 
-  row.querySelector(".delete-row").addEventListener("click", () => row.remove());
+  wireDeleteButton(row.querySelector(".delete-row"));
   rowsContainer.appendChild(row);
 }
 
-addButton.addEventListener("click", addRow);
-addRow();
+if (rowsContainer && addButton) {
+  rowsContainer.querySelectorAll(".delete-row").forEach((button) => wireDeleteButton(button));
+  addButton.addEventListener("click", addRow);
+
+  if (rowsContainer.children.length === 0) {
+    addRow();
+  }
+}

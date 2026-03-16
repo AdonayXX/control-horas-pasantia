@@ -32,37 +32,12 @@
         <button type="submit" class="button-danger">Eliminar reporte</button>
       </form>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Semana</th>
-            <th>Día</th>
-            <th>Total de horas</th>
-            <th>Observaciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for entry in report.entries %}
-            <tr>
-              <td>{{ entry.semana }}</td>
-              <td>{{ entry.dia }}</td>
-              <td>{{ entry.total_horas }}</td>
-              <td>{{ entry.observaciones }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr class="total-row">
-            <td colspan="2">Total de horas</td>
-            <td>{{ report.total_horas }}</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
+      <section id="edit-report" class="append-section">
+        <h2>Editar reporte</h2>
+        <form method="post" action="{{ url_for('edit_report_view', report_id=report.id) }}">
+          <label for="report-number">Numero de reporte</label>
+          <input id="report-number" name="report_number" type="number" min="1" step="1" value="{{ report.id }}" required />
 
-      <section id="add-hours" class="append-section">
-        <h2>Agregar horas a este reporte</h2>
-        <form method="post" action="{{ url_for('append_report_entries_view', report_id=report.id) }}">
           <table id="hours-table">
             <thead>
               <tr>
@@ -73,11 +48,30 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody id="rows"></tbody>
+            <tbody id="rows">
+              {% for entry in report.entries %}
+                <tr>
+                  <td><input type="text" name="semana[]" value="{{ entry.semana }}" required /></td>
+                  <td>
+                    <input
+                      type="text"
+                      name="dia[]"
+                      value="{{ entry.dia }}"
+                      placeholder="2026/03/06"
+                      pattern="\d{4}/\d{2}/\d{2}"
+                      required
+                    />
+                  </td>
+                  <td><input type="number" name="horas[]" min="0" step="1" value="{{ entry.total_horas }}" required /></td>
+                  <td><input type="text" name="observaciones[]" value="{{ entry.observaciones }}" placeholder="Actividades realizadas" /></td>
+                  <td><button type="button" class="delete-row">Eliminar</button></td>
+                </tr>
+              {% endfor %}
+            </tbody>
           </table>
           <div class="actions">
             <button type="button" id="add-row">+ Agregar fila</button>
-            <button type="submit">Guardar horas en este reporte</button>
+            <button type="submit">Guardar cambios del reporte</button>
           </div>
         </form>
       </section>

@@ -105,6 +105,52 @@ def add_entries_to_report(report_id: int, entries: List[ReportEntry]) -> bool:
     return True
 
 
+def update_report(report_id: int, entries: List[ReportEntry], new_report_id: Optional[int] = None) -> int:
+    """Update all entries for a report and optionally change its numeric id.
+
+    Returns the final report id after update.
+    """
+    target_id = report_id if new_report_id is None else new_report_id
+
+    with _connection() as conn:
+        report_exists = conn.execute("SELECT id, created_at FROM reports WHERE id = ?", (report_id,)).fetchone()
+        if not report_exists:
+            raise ValueError("El reporte no existe.")
+
+        if target_id <= 0:
+            raise ValueError("El numero del reporte debe ser mayor a 0.")
+
+        if target_id != report_id:
+            duplicate = conn.execute("SELECT 1 FROM reports WHERE id = ?", (target_id,)).fetchone()
+            if duplicate:
+                raise ValueError(f"Ya existe un reporte con numero #{target_id}.")
+
+            # Create new report id first, move children, then delete old parent.
+            conn.execute(
+                "INSERT INTO reports (id, created_at) VALUES (?, ?)",
+                (target_id, report_exists["created_at"]),
+            )
+            conn.execute(
+                "UPDATE report_entries SET report_id = ? WHERE report_id = ?",
+                (target_id, report_id),
+            )
+            conn.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+
+        conn.execute("DELETE FROM report_entries WHERE report_id = ?", (target_id,))
+        for entry in entries:
+            conn.execute(
+                """
+                INSERT INTO report_entries (report_id, semana, dia, total_horas, observaciones)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (target_id, entry.semana, entry.dia, entry.total_horas, entry.observaciones),
+            )
+
+        conn.commit()
+
+    return target_id
+
+
 def delete_report(report_id: int) -> bool:
     with _connection() as conn:
         report_exists = conn.execute("SELECT 1 FROM reports WHERE id = ?", (report_id,)).fetchone()
