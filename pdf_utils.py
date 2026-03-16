@@ -179,16 +179,6 @@ def generate_report_pdf(entries: List[ReportEntry], output_path: Path, report_id
                     available_width=available_width,
                     label_style=label_style,
                     normal_style=styles["Normal"],
-                    digital_box_style=digital_box_style,
-                ),
-                Spacer(1, 10),
-                Paragraph(
-                    (
-                        "Para la firma digital, abre este PDF en un lector compatible "
-                        "(por ejemplo, Adobe Acrobat o Foxit) y aplica la firma certificada "
-                        "en el recuadro indicado."
-                    ),
-                    note_style,
                 ),
             ]
         )
@@ -239,50 +229,35 @@ def _build_signature_table(
     available_width: float,
     label_style: ParagraphStyle,
     normal_style: ParagraphStyle,
-    digital_box_style: ParagraphStyle,
 ) -> Table:
-    left_width = available_width * 0.44
-    right_width = available_width - left_width
-
     signature_image_path = _resolve_image_path("firma")
     name_image_path = _resolve_image_path("nombre")
 
-    # Celda izquierda: imagen firma + línea pegada + etiqueta nombre + imagen nombre + línea pegada
-    # Al pasar una lista como contenido de celda, ReportLab los apila verticalmente sin gap extra
     left_cell = [
-        _build_signature_asset(signature_image_path, width=left_width * 0.6, max_height=25 * mm),
+        Paragraph("Firma y Nombre", label_style),
+        Spacer(1, 10),
+        _build_signature_asset(signature_image_path, width=available_width * 0.4, max_height=25 * mm),
         Spacer(1, -8),
         Paragraph("______________________________", normal_style),
-        Spacer(1, 14),
-        Paragraph("Nombre:", label_style),
         Spacer(1, 6),
-        _build_signature_asset(name_image_path, width=left_width * 0.65, max_height=16 * mm),
+        _build_signature_asset(name_image_path, width=available_width * 0.45, max_height=16 * mm),
         Spacer(1, -8),
         Paragraph("______________________________", normal_style),
     ]
 
     signature_table = Table(
-        [
-            [Paragraph("Firma manual", label_style), Paragraph("Firma digital", label_style)],
-            [left_cell, Paragraph("Área sugerida para firma digital", digital_box_style)],
-        ],
-        colWidths=[left_width, right_width],
+        [[left_cell]],
+        colWidths=[available_width],
         hAlign="LEFT",
     )
     signature_table.setStyle(
         TableStyle(
             [
-                ("BOX", (1, 1), (1, 1), 1, colors.black),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ALIGN", (1, 1), (1, 1), "CENTER"),
                 ("LEFTPADDING", (0, 0), (-1, -1), 0),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 0),
                 ("TOPPADDING", (0, 0), (-1, -1), 4),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-                ("TOPPADDING", (1, 1), (1, 1), 18),
-                ("BOTTOMPADDING", (1, 1), (1, 1), 18),
-                ("LEFTPADDING", (1, 1), (1, 1), 8),
-                ("RIGHTPADDING", (1, 1), (1, 1), 8),
             ]
         )
     )
